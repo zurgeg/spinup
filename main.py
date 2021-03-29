@@ -120,14 +120,13 @@ def cli():
 @click.argument('file')
 @click.argument('vm')
 def create_drives(file, vm):
-    '''FILE: Spinup File
+    '''FILE: Spinup File,
     VM: VM Name
     '''
-    if not file.startswith('spinup://'):
+    if not vm.startswith('spinup://'):
         print(Fore.RED + '[FATAL] This command is only for use with LibSpinup VMs')
         print(Fore.GREEN + '[INFO] For more information, see the documentation.')
         exit(1)
-    file = script_location.replace('spinup://',LIBSPINUP_SCRIPT_LOCATION + '.sh')
     try:
         vmfile = json.load(open(file))
     except Exception as e:
@@ -141,7 +140,11 @@ def create_drives(file, vm):
         file = i["file"]
         format_ = i["format"]
         size = i.get('size','16G')
-        subprocess.popen(['qemu-img','create',f'-f {format_}',file,size])
+        print(Fore.GREEN + f'Run: qemu-img -f {format_} {file} {size}' + Fore.RESET)
+        if uname != 'Windows':
+            subprocess.Popen(['qemu-img','create',f'-f {format_}',file,size])
+        else:
+            print(Fore.YELLOW + 'qemu-img not supported on Windows, not running.' + Fore.RESET)
 
 @cli.command()
 @click.argument('file')
