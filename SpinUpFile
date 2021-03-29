@@ -1,0 +1,19 @@
+{
+    "machine":{
+        "accelerator":"kvm"
+    },
+    "cpu":{
+        "cores":4
+    },
+    "drives":[
+        {
+            "id":"drive0",
+            "format":"qcow2",
+            "file":"testing.qcow2",
+            "size":"8G"
+        }
+    ],
+    "misc":{
+        "use_ovmf":true
+    }
+}
