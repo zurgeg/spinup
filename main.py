@@ -236,12 +236,12 @@ def generate(file,script_location=''):
                 format_ = drive['format']
                 file_ = drive['file']
                 if using_libspinup:
-                    script.write(f'-drive id={id_},if=none,format={format_},file={vm_loc + "/" + file_} \\\n\t')
+                    script.write(f'-drive id={id_},if=none,format={format_},file=\"{vm_loc + "/" + file_}\" \\\n\t')
                 else:
-                    script.write(f'-drive id={id_},if=none,format={format_},file={file_} \\\n\t')
+                    script.write(f'-drive id={id_},if=none,format={format_},file=\"{file_}\" \\\n\t')
                 script.write(f'-device ide-hd,bus=sata.{sataport},drive={id_}')
                 sataport += 1
-            script.write(' \\\n')
+            script.write(' \\\n\t')
         if 'pci_passthrough' in keys:
             print(Fore.YELLOW + '[WARNING] Enabling PCI passthrough requires a change in the GRUB bootloader.' + Fore.RESET)
             VGA_MODE = 'none' # Change the default VGA mode
@@ -252,12 +252,13 @@ def generate(file,script_location=''):
             script.write(' \\\n\t')
         if 'virtual_display_mode' in keys:
             print(Fore.YELLOW + '[WARNING] If you are trying to do GPU Passthrough, the display mode is automatically set to none')
-            script.write(f'-vga {vmfile["vga"]} \\\n')
+            script.write(f'-vga {vmfile["vga"]} \\\n\t')
         else:
-            script.write(f'-vga {VGA_MODE} \\\n')
+            script.write(f'-vga {VGA_MODE} \\\n\t')
         if 'qemu_args' in keys:
             for i in vmfile['qemu_args']:
                 script.write(f'\t-{i["argument"]} {i["value"]} \\\n')
+            script.write('\t')
         if 'misc' in keys:
             misc_keys = list(vmfile['misc'].keys())
             misc = vmfile['misc']
@@ -272,7 +273,7 @@ def generate(file,script_location=''):
                             print(Fore.RED + '[FATAL] Could not download OVMF. Quit.' + Fore.RESET)
                             exit(1)
                         with open('firmware/OVMF.fd', 'wb') as f:
-                            f.write(r.raw.data)
+                            f.write(r.content)
                         print(Fore.GREEN + '[OK] Downloaded OVMF!' + Fore.RESET)
-                    script.write('\t-drive if=pflash,format=raw,readonly,file="firmware/OVMF.fd" \\\n')
+                    script.write('-drive if=pflash,format=raw,readonly,file="firmware/OVMF.fd" \\\n')
 cli()   
