@@ -107,6 +107,7 @@ else:
     print(Fore.YELLOW + '[WARNING] Spinup Scripts are designed only for use on Linux hosts' + Fore.RESET)
     LIBSPINUP_BASE = os.path.join(os.environ['APPDATA'], 'LibSpinup')
 LIBSPINUP_SCRIPT_LOCATION = os.path.join(LIBSPINUP_BASE, 'scripts')
+LIBSPINUP_DISK_LOCATION = os.path.join(LIBSPINUP_BASE,'disks')
 if not os.path.exists(LIBSPINUP_BASE):
     os.mkdir(LIBSPINUP_BASE)
     os.mkdir(LIBSPINUP_SCRIPT_LOCATION)
@@ -148,9 +149,11 @@ def create_drives(file, vm):
 def generate(file,script_location=''):
     """FILE: File to generate from"""
     using_libspinup = False
+    firm_path = 'firmware'
     if script_location.startswith('spinup://'):
         vm_name = script_location.replace('spinup://','')
         vm_loc = script_location.replace('spinup://',LIBSPINUP_SCRIPT_LOCATION + '/')
+        firm_path = script_location.replace('spinup://',LIBSPINUP_DISK_LOCATION + '/firmware')
         script_location = vm_loc + '.sh'
         using_libspinup = True
     try:
@@ -264,16 +267,17 @@ def generate(file,script_location=''):
             misc = vmfile['misc']
             if 'use_ovmf' in misc_keys:
                 if misc['use_ovmf']:
-                    if not os.path.exists('firmware'):
+                    ovmf_fd_path = os.path.join(firm_path, 'OVMF.fd')
+                    if not os.path.exists(firm_path):
                         os.mkdir('firmware')
-                    if not os.path.exists('firmware/OVMF.fd'):
+                    if not os.path.exists(ovmf_fd_path):
                         print(Fore.GREEN + '[NOTE] Donwloading OVMF Firmware' + Fore.RESET)
                         r = requests.get('https://github.com/clearlinux/common/blob/master/OVMF.fd?raw=true')
                         if r.status_code != 200:
                             print(Fore.RED + '[FATAL] Could not download OVMF. Quit.' + Fore.RESET)
                             exit(1)
-                        with open('firmware/OVMF.fd', 'wb') as f:
+                        with open(ovmf_fd_path, 'wb') as f:
                             f.write(r.content)
                         print(Fore.GREEN + '[OK] Downloaded OVMF!' + Fore.RESET)
-                    script.write('-drive if=pflash,format=raw,readonly,file="firmware/OVMF.fd" \\\n')
+                    script.write(f'-drive if=pflash,format=raw,readonly,file="{ovmf_fd_path}" \\\n')
 cli()   
