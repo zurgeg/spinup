@@ -170,61 +170,61 @@ def generate_sh(file,script_location='boot.sh'):
             print(Fore.YELLOW + '[WARNING] Number of cores was not specified. Falling back to 2.' + Fore.RESET)
             script.write("4,cores=2")
         script.write(" \\\n")
-        if 'drives' in keys:
-            vmfile['disks'] = vmfile['drives']
-            keys.append('disks')
-        if 'disks' in keys:
-            '''
-            Reference:     
-            -device ich9-ahci,id=sata \\
-            -drive id=ESP,if=none,format=qcow2,file=ESP.qcow2 \\
-            -device ide-hd,bus=sata.2,drive=ESP \\
-            '''
-            script.write('\t-device ich9-ahci,id=sata')
-            for drive in vmfile['disks']:
-                script.write(' \\\n\t')
-                id_ = drive['id']
-                format_ = drive['format']
-                file_ = drive['file']
-                if using_libspinup:
-                    script.write(f'-drive id={id_},if=none,format={format_},file=\"{disk_loc + "/" + file_}\" \\\n\t')
-                else:
-                    script.write(f'-drive id={id_},if=none,format={format_},file=\"{file_}\" \\\n\t')
-                script.write(f'-device ide-hd,bus=sata.{sataport},drive={id_}')
-                sataport += 1
+    if 'drives' in keys:
+        vmfile['disks'] = vmfile['drives']
+        keys.append('disks')
+    if 'disks' in keys:
+        '''
+        Reference:     
+        -device ich9-ahci,id=sata \\
+        -drive id=ESP,if=none,format=qcow2,file=ESP.qcow2 \\
+        -device ide-hd,bus=sata.2,drive=ESP \\
+        '''
+        script.write('\t-device ich9-ahci,id=sata')
+        for drive in vmfile['disks']:
             script.write(' \\\n\t')
-        if 'pci_passthrough' in keys:
-            print(Fore.YELLOW + '[WARNING] Enabling PCI passthrough requires a change in the GRUB bootloader.' + Fore.RESET)
-            VGA_MODE = 'none' # Change the default VGA mode
-            script.write('\t-device pcie-root-port,bus=pcie.0,multifunction=on,port=1,chassis=1,id=port.1')
-            for device in vmfile['pci_passthrough']:
-                script.write(f' \\\n\t-device vfio-pcie,host={device},bus=port.{pcieport},multifunction=on')
-                pcieport += 1    
-            script.write(' \\\n\t')
-        if 'virtual_display_mode' in keys:
-            print(Fore.YELLOW + '[WARNING] If you are trying to do GPU Passthrough, the display mode is automatically set to none')
-            script.write(f'-vga {vmfile["vga"]} \\\n\t')
-        else:
-            script.write(f'-vga {VGA_MODE} \\\n\t')
-        if 'qemu_args' in keys:
-            for i in vmfile['qemu_args']:
-                script.write(f'\t-{i["argument"]} {i["value"]} \\\n')
-            script.write('\t')
-        if 'misc' in keys:
-            misc_keys = list(vmfile['misc'].keys())
-            misc = vmfile['misc']
-            if 'use_ovmf' in misc_keys:
-                if misc['use_ovmf']:
-                    ovmf_fd_path = os.path.join(firm_path, 'OVMF.fd')
-                    if not os.path.exists(firm_path):
-                        os.mkdir('firmware')
-                    if not os.path.exists(ovmf_fd_path):
-                        print(Fore.GREEN + '[NOTE] Donwloading OVMF Firmware' + Fore.RESET)
-                        r = requests.get('https://github.com/clearlinux/common/blob/master/OVMF.fd?raw=true')
-                        if r.status_code != 200:
-                            print(Fore.RED + '[FATAL] Could not download OVMF. Quit.' + Fore.RESET)
-                            exit(1)
-                        with open(ovmf_fd_path, 'wb') as f:
-                            f.write(r.content)
-                        print(Fore.GREEN + '[OK] Downloaded OVMF!' + Fore.RESET)
-                    script.write(f'-drive if=pflash,format=raw,readonly,file="{ovmf_fd_path}" \\\n')
+            id_ = drive['id']
+            format_ = drive['format']
+            file_ = drive['file']
+            if using_libspinup:
+                script.write(f'-drive id={id_},if=none,format={format_},file=\"{disk_loc + "/" + file_}\" \\\n\t')
+            else:
+                script.write(f'-drive id={id_},if=none,format={format_},file=\"{file_}\" \\\n\t')
+            script.write(f'-device ide-hd,bus=sata.{sataport},drive={id_}')
+            sataport += 1
+        script.write(' \\\n\t')
+    if 'pci_passthrough' in keys:
+        print(Fore.YELLOW + '[WARNING] Enabling PCI passthrough requires a change in the GRUB bootloader.' + Fore.RESET)
+        VGA_MODE = 'none' # Change the default VGA mode
+        script.write('\t-device pcie-root-port,bus=pcie.0,multifunction=on,port=1,chassis=1,id=port.1')
+        for device in vmfile['pci_passthrough']:
+            script.write(f' \\\n\t-device vfio-pcie,host={device},bus=port.{pcieport},multifunction=on')
+            pcieport += 1    
+        script.write(' \\\n\t')
+    if 'virtual_display_mode' in keys:
+        print(Fore.YELLOW + '[WARNING] If you are trying to do GPU Passthrough, the display mode is automatically set to none')
+        script.write(f'-vga {vmfile["vga"]} \\\n\t')
+    else:
+        script.write(f'-vga {VGA_MODE} \\\n\t')
+    if 'qemu_args' in keys:
+        for i in vmfile['qemu_args']:
+            script.write(f'\t-{i["argument"]} {i["value"]} \\\n')
+        script.write('\t')
+    if 'misc' in keys:
+        misc_keys = list(vmfile['misc'].keys())
+        misc = vmfile['misc']
+        if 'use_ovmf' in misc_keys:
+            if misc['use_ovmf']:
+                ovmf_fd_path = os.path.join(firm_path, 'OVMF.fd')
+                if not os.path.exists(firm_path):
+                    os.mkdir('firmware')
+                if not os.path.exists(ovmf_fd_path):
+                    print(Fore.GREEN + '[NOTE] Donwloading OVMF Firmware' + Fore.RESET)
+                    r = requests.get('https://github.com/clearlinux/common/blob/master/OVMF.fd?raw=true')
+                    if r.status_code != 200:
+                        print(Fore.RED + '[FATAL] Could not download OVMF. Quit.' + Fore.RESET)
+                        exit(1)
+                    with open(ovmf_fd_path, 'wb') as f:
+                        f.write(r.content)
+                    print(Fore.GREEN + '[OK] Downloaded OVMF!' + Fore.RESET)
+                script.write(f'-drive if=pflash,format=raw,readonly,file="{ovmf_fd_path}" \\\n')
