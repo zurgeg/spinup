@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 reference:
 qemu-system-x86_64 \\
