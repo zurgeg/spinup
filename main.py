@@ -65,6 +65,7 @@ start = time.time()
 try:
     import os.path
     import os
+    from os.path import expanduser
 except ImportError:
     print(Fore.RED + '[FATAL] Failed to load OS-related modules due to an import error! Quit.' + Fore.RESET)
     exit(1)
@@ -102,7 +103,7 @@ try:
 except:
     uname = 'Windows'
 if uname != 'Windows':
-    LIBSPINUP_BASE = '~/.libspinup'
+    LIBSPINUP_BASE = os.path.join(expanduser("~"), '.libspinup'
 else:
     print(Fore.YELLOW + '[WARNING] Spinup Scripts are designed only for use on Linux hosts' + Fore.RESET)
     LIBSPINUP_BASE = os.path.join(os.environ['APPDATA'], 'LibSpinup')
