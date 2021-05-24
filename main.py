@@ -103,7 +103,7 @@ try:
 except:
     uname = 'Windows'
 if uname != 'Windows':
-    LIBSPINUP_BASE = os.path.join(expanduser("~"), '.libspinup'
+    LIBSPINUP_BASE = os.path.join(expanduser("~"), '.libspinup')
 else:
     print(Fore.YELLOW + '[WARNING] Spinup Scripts are designed only for use on Linux hosts' + Fore.RESET)
     LIBSPINUP_BASE = os.path.join(os.environ['APPDATA'], 'LibSpinup')
